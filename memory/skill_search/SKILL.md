@@ -60,5 +60,5 @@ python -m skill_search --env
 
 | 项 | 默认值 | 说明 |
 |---|---|---|
-| API地址 | `http://www.fudankw.cn:58787` | 环境变量 `SKILL_SEARCH_API` 可覆盖 |
+| API地址 | `https://www.fudankw.cn:58787` | 环境变量 `SKILL_SEARCH_API` 可覆盖 |
 | API密钥 | 无(可选) | 环境变量 `SKILL_SEARCH_KEY` |

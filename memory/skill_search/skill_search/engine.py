@@ -111,7 +111,7 @@ def detect_environment():
 
 # ── API 配置与调用 ────────────────────────────────────────
 
-DEFAULT_API_URL = "http://www.fudankw.cn:58787"
+DEFAULT_API_URL = "https://www.fudankw.cn:58787"
 
 def _get_api_url():
     return os.environ.get("SKILL_SEARCH_API", DEFAULT_API_URL)
