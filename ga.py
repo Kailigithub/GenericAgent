@@ -267,6 +267,7 @@ class GenericAgentHandler(BaseHandler):
         self.history_info = last_history if last_history else []
         self.code_stop_signal = []
         self._done_hooks = []
+        self._consecutive_empty_retries = 0
 
     def _get_abs_path(self, path):
         if not path: return ""
@@ -446,8 +447,14 @@ class GenericAgentHandler(BaseHandler):
         content = getattr(response, 'content', '') or ""
         thinking = getattr(response, 'thinking', '') or ""
         if not response or (not content.strip() and not thinking.strip()):
-            yield "[Warn] LLM returned an empty response. Retrying...\n"
+            self._consecutive_empty_retries += 1
+            if self._consecutive_empty_retries > 3:
+                self._consecutive_empty_retries = 0
+                yield "[Error] LLM returned empty responses 3 consecutive times. Stopping.\n"
+                return StepOutcome({}, next_prompt=None)
+            yield f"[Warn] LLM returned an empty response. Retrying ({self._consecutive_empty_retries}/3)...\n"
             return StepOutcome({}, next_prompt="[System] Blank response, regenerate and tooluse")
+        self._consecutive_empty_retries = 0
         if len(content) > 50 and ('[!!! 流异常中断' in content[-100:] or '!!!Error:' in content[-100:]):
             return StepOutcome({}, next_prompt="[System] Incomplete response. Regenerate and tooluse.")
         if 'max_tokens !!!]' in content[-100:]:
