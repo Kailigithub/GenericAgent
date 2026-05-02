@@ -242,8 +242,8 @@ class TMWebDriver:
         if newtabs: rr['newTabs'] = newtabs
         return rr
     
-    def _remote_cmd(self, cmd):
-        try: return requests.post(self.remote, headers={"Content-Type": "application/json"}, json=cmd).json()
+    def _remote_cmd(self, cmd, timeout=30):
+        try: return requests.post(self.remote, headers={"Content-Type": "application/json"}, json=cmd, timeout=timeout).json()
         except (ConnectionError, requests.exceptions.ConnectionError):
             raise ConnectionError("TMWebDriver master未运行，看tmwebdriver_sop启动master")
 
