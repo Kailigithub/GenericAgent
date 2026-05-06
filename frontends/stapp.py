@@ -273,20 +273,24 @@ if prompt := st.chat_input("any task?"):
         st.session_state.messages = [{"role": "assistant", "content": reset_conversation(agent), "time": ts}]
         _reset_and_rerun()
     if cmd.startswith("/continue"):
-        m = re.match(r'/continue\s+(\d+)\s*$', cmd.strip())
-        sessions = list_sessions(exclude_pid=os.getpid()) if m else []
-        idx = int(m.group(1)) - 1 if m else -1
-        # Resolve target path BEFORE handle (which snapshots current log, shifting indices).
-        target = sessions[idx][0] if 0 <= idx < len(sessions) else None
-        result = handle_frontend_command(agent, cmd)
-        history = extract_ui_messages(target) if target and result.startswith('✅') else None
-        tail = [{"role": "assistant", "content": result, "time": ts}]
-        if history:
-            st.session_state.messages = history + tail
-        else:
-            st.session_state.messages = list(st.session_state.messages) + \
-                [{"role": "user", "content": cmd, "time": ts}] + tail
-        _reset_and_rerun()
+        try:
+            m = re.match(r'/continue\s+(\d+)\s*$', cmd.strip())
+            sessions = list_sessions(exclude_pid=os.getpid()) if m else []
+            idx = int(m.group(1)) - 1 if m else -1
+            # Resolve target path BEFORE handle (which snapshots current log, shifting indices).
+            target = sessions[idx][0] if 0 <= idx < len(sessions) else None
+            result = handle_frontend_command(agent, cmd)
+            history = extract_ui_messages(target) if target and result.startswith('✅') else None
+            tail = [{"role": "assistant", "content": result, "time": ts}]
+            if history:
+                st.session_state.messages = history + tail
+            else:
+                st.session_state.messages = list(st.session_state.messages) + \
+                    [{"role": "user", "content": cmd, "time": ts}] + tail
+            _reset_and_rerun()
+        except Exception as e:
+            st.error(f"恢复会话失败: {e}")
+            st.rerun()
     if cmd.startswith("/btw"):
         answer = btw_handle_frontend(agent, cmd)  # sync; bypasses put_task → main agent.run() untouched
         st.session_state.messages = list(st.session_state.messages) + [
