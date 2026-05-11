@@ -3,10 +3,22 @@ from datetime import datetime, timedelta
 
 # 端口锁：防止重复启动，bind失败时agentmain会直接崩溃退出
 # reload时mod.__dict__保留_lock，跳过重复绑定
+# 端口可通过 SCHEDULER_LOCK_PORT 环境变量配置，默认 45762
+# Windows 动态端口范围可能占用 45762，此时自动尝试备选端口
 try: _lock
 except NameError:
     _lock = _socket.socket(_socket.AF_INET, _socket.SOCK_STREAM)
-    _lock.bind(('127.0.0.1', 45762)); _lock.listen(1)
+    _lock.setsockopt(_socket.SOL_SOCKET, _socket.SO_REUSEADDR, 1)
+    _base_port = int(os.environ.get('SCHEDULER_LOCK_PORT', 45762))
+    _bound = False
+    for _port in range(_base_port, _base_port + 10):
+        try:
+            _lock.bind(('127.0.0.1', _port)); _lock.listen(1)
+            _bound = True; break
+        except OSError:
+            continue
+    if not _bound:
+        raise RuntimeError(f'scheduler: cannot bind lock port in range {_base_port}-{_base_port+9}')
 
 INTERVAL = 120
 ONCE = False
