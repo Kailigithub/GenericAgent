@@ -145,14 +145,8 @@
           <div class="page-pad">
             <div class="page-title" data-i18n="page.channels.title"></div>
             <div class="page-sub" data-i18n="page.channels.sub"></div>
-            <div class="list" id="chan-list">
-              <div class="list-row"><svg class="lr-ic" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg><b data-i18n="ch.wechat"></b><span class="lr-st on" data-i18n="st.online"></span><span class="grow"></span><button class="sw-mini on"><i></i></button><a class="link sm" data-i18n="act.configure"></a></div>
-              <div class="list-row"><svg class="lr-ic" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg><b data-i18n="ch.wecom"></b><span class="lr-st off" data-i18n="st.offline"></span><span class="grow"></span><button class="sw-mini"><i></i></button><a class="link sm" data-i18n="act.configure"></a></div>
-              <div class="list-row"><svg class="lr-ic" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg><b>QQ</b><span class="lr-st off" data-i18n="st.offline"></span><span class="grow"></span><button class="sw-mini"><i></i></button><a class="link sm" data-i18n="act.configure"></a></div>
-              <div class="list-row"><svg class="lr-ic" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg><b>Telegram</b><span class="lr-st on" data-i18n="st.online"></span><span class="grow"></span><button class="sw-mini on"><i></i></button><a class="link sm" data-i18n="act.configure"></a></div>
-              <div class="list-row"><svg class="lr-ic" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg><b data-i18n="ch.lark"></b><span class="lr-st off" data-i18n="st.offline"></span><span class="grow"></span><button class="sw-mini"><i></i></button><a class="link sm" data-i18n="act.configure"></a></div>
-              <div class="list-row"><svg class="lr-ic" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg><b data-i18n="ch.dingtalk"></b><span class="lr-st err" data-i18n="st.error"></span><span class="grow"></span><button class="sw-mini"><i></i></button><a class="link sm" data-i18n="act.configure"></a></div>
-            </div>
+            <div class="list" id="chan-list"></div>
+            <div class="list-empty" id="chan-empty" hidden data-i18n="ch.empty"></div>
           </div>
         </section>
 
@@ -305,6 +299,22 @@
     </div>
   </div>
 
+  <!-- 渠道日志 弹窗 -->
+  <div class="modal" id="chan-log-modal" hidden>
+    <div class="modal-backdrop" data-close></div>
+    <div class="modal-card modal-card-wide" role="dialog">
+      <div class="modal-head">
+        <div class="modal-title" id="chan-log-title" data-i18n="modal.channelLogs"></div>
+        <button class="modal-x" data-close data-i18n-title="common.close" title="">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="6" y1="6" x2="18" y2="18"/><line x1="18" y1="6" x2="6" y2="18"/></svg>
+        </button>
+      </div>
+      <div class="modal-body">
+        <pre class="chan-log-pre" id="chan-log-pre"></pre>
+      </div>
+    </div>
+  </div>
+
   <!-- 配置 弹窗 -->
   <div class="modal" id="settings-modal" hidden>
     <div class="modal-backdrop" data-close></div>
@@ -345,8 +355,9 @@
   </div>
 </div>
 
+<div id="toast-root" class="toast-root" aria-live="polite"></div>
+
 <script src="vendor/marked.min.js"></script>
-<script src="ga-web.js"></script>
 <script src="app.js"></script>
 <script src="annot.js"></script><!-- DEV 脚手架，可删 -->
 </body>
