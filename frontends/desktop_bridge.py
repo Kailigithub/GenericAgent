@@ -34,32 +34,6 @@ from typing import Any, Dict, List, Optional, Set
 from aiohttp import web, WSMsgType
 
 APP_DIR = Path(__file__).resolve().parent
-if str(APP_DIR) not in sys.path:
-    sys.path.insert(0, str(APP_DIR))
-
-TOKEN_HISTORY_DIR = Path.home() / ".GenericAgent"
-TOKEN_HISTORY_FILE = TOKEN_HISTORY_DIR / "token_history.json"
-_token_lock = threading.Lock()
-
-
-def _load_token_history() -> list:
-    try:
-        return json.loads(TOKEN_HISTORY_FILE.read_text(encoding="utf-8"))
-    except (OSError, json.JSONDecodeError):
-        return []
-
-
-def _save_token_record(session_id: str, title: str, input_t: int, output_t: int, cache_create: int, cache_read: int, model: str = ''):
-    with _token_lock:
-        TOKEN_HISTORY_DIR.mkdir(parents=True, exist_ok=True)
-        history = _load_token_history()
-        history.append({
-            "sessionId": session_id, "title": title,
-            "input": input_t, "output": output_t,
-            "cacheCreate": cache_create, "cacheRead": cache_read,
-            "model": model, "ts": time.time(),
-        })
-        TOKEN_HISTORY_FILE.write_text(json.dumps(history, ensure_ascii=False), encoding="utf-8")
 
 
 def find_default_ga_root() -> Path:
@@ -124,11 +98,6 @@ class AgentManager:
 
     def make_agent(self, sess: Session):
         root = self.ensure_ga_import_path()
-        try:
-            import cost_tracker as _ct_mod
-            _ct_mod.install()
-        except Exception:
-            pass
         old_cwd = os.getcwd()
         try:
             os.chdir(sess.cwd or str(root))
@@ -234,15 +203,6 @@ class AgentManager:
         return {"ok": True, "sessionId": sid, "accepted": True, "userMessageId": user_msg["id"], "seq": seq}
 
     def run_agent_turn(self, sess: Session, prompt: str, images: Optional[list] = None):
-        # Snapshot token state before this turn
-        _snap = None
-        _ct = None
-        try:
-            import cost_tracker as _ct_mod
-            _ct = _ct_mod.get(f"GA-{sess.id}")
-            _snap = (_ct.input, _ct.output, _ct.cache_create, _ct.cache_read)
-        except Exception as _e:
-            print(f"[TokenDebug] snapshot failed: {_e}", file=sys.stderr)
         try:
             if sess.agent is None:
                 sess.agent = self.make_agent(sess)
@@ -310,25 +270,6 @@ class AgentManager:
                 self.add_message(sess, "error", str(e))
             print(tb, file=sys.stderr)
             emit_session_state(sess, "error")
-        finally:
-            if _snap is not None:
-                try:
-                    now = (_ct.input, _ct.output, _ct.cache_create, _ct.cache_read)
-                    di, do, dc, dr = now[0]-_snap[0], now[1]-_snap[1], now[2]-_snap[2], now[3]-_snap[3]
-                    print(f"[TokenDebug] snap={_snap} now={now} delta=({di},{do},{dc},{dr})", file=sys.stderr)
-                    if di or do or dc or dr:
-                        model = ''
-                        try: model = sess.agent.get_llm_name(model=True) or ''
-                        except Exception: pass
-                        _save_token_record(sess.id, sess.title, di, do, dc, dr, model)
-                    else:
-                        import cost_tracker as _ct_mod2
-                        all_t = _ct_mod2.all_trackers()
-                        print(f"[TokenDebug] all trackers: {list(all_t.keys())}", file=sys.stderr)
-                except Exception as _te:
-                    print(f"[TokenDebug] error: {_te}", file=sys.stderr)
-            else:
-                print("[TokenDebug] _snap is None — cost_tracker import failed", file=sys.stderr)
 
     def messages(self, sid: str, after: int = 0, limit: int = 200) -> dict:
         with self.lock:
@@ -633,17 +574,6 @@ async def path_open_handler(request):
     return json_ok({"ok": True, "path": str(target)})
 
 
-async def token_stats_handler(request):
-    since = float(request.query.get("since") or 0)
-    until = float(request.query.get("until") or 0)
-    records = _load_token_history()
-    if since:
-        records = [r for r in records if r.get("ts", 0) >= since]
-    if until:
-        records = [r for r in records if r.get("ts", 0) <= until]
-    return json_ok({"records": records})
-
-
 def create_app():
     app = web.Application(middlewares=[cors_middleware])
     app.router.add_get("/ws", ws_handler)
@@ -659,7 +589,6 @@ def create_app():
     app.router.add_get("/session/{sid}/messages", messages_handler)
     app.router.add_post("/session/{sid}/cancel", cancel_handler)
     app.router.add_post("/path/open", path_open_handler)
-    app.router.add_get("/token-stats", token_stats_handler)
 
     # Serve static frontend (desktop/static/)
     static_dir = APP_DIR / "desktop" / "static"
