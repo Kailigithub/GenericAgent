@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <title>GenericAgent</title>
-<link rel="stylesheet" href="styles.css?v=4">
+<link rel="stylesheet" href="styles.css?v=5">
 <!-- DEV 脚手架(标注模式)：删本行 + 下方 annot.js 一行即可彻底移除 -->
 <link rel="stylesheet" href="annot.css">
 </head>
@@ -297,15 +297,34 @@
   <!-- 渠道日志 弹窗 -->
   <div class="modal" id="chan-log-modal" hidden>
     <div class="modal-backdrop" data-close></div>
-    <div class="modal-card modal-card-wide" role="dialog">
+    <div class="modal-card modal-card-wide modal-card-inset" role="dialog">
       <div class="modal-head">
         <div class="modal-title" id="chan-log-title" data-i18n="modal.channelLogs"></div>
         <button class="modal-x" data-close data-i18n-title="common.close" title="">
           <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="6" y1="6" x2="18" y2="18"/><line x1="18" y1="6" x2="6" y2="18"/></svg>
         </button>
       </div>
-      <div class="modal-body">
+      <div class="modal-body modal-body-inset">
         <pre class="chan-log-pre" id="chan-log-pre"></pre>
+      </div>
+    </div>
+  </div>
+
+  <!-- mykey 配置 弹窗 -->
+  <div class="modal" id="chan-config-modal" hidden>
+    <div class="modal-backdrop" data-close></div>
+    <div class="modal-card modal-card-wide modal-card-inset" role="dialog">
+      <div class="modal-head">
+        <div class="modal-title" id="chan-config-title" data-i18n="modal.mykeyConfig"></div>
+        <button class="modal-x" data-close data-i18n-title="common.close" title="">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="6" y1="6" x2="18" y2="18"/><line x1="18" y1="6" x2="6" y2="18"/></svg>
+        </button>
+      </div>
+      <div class="modal-body modal-body-inset chan-config-body">
+        <textarea id="chan-config-editor" class="mykey-editor" spellcheck="false"></textarea>
+        <div class="chan-config-foot">
+          <button type="button" class="chan-config-save" id="chan-config-save" data-i18n="common.save"></button>
+        </div>
       </div>
     </div>
   </div>
@@ -353,7 +372,7 @@
 <div id="toast-root" class="toast-root" aria-live="polite"></div>
 
 <script src="vendor/marked.min.js"></script>
-<script src="app.js?v=6"></script>
+<script src="app.js?v=7"></script>
 <script src="annot.js"></script><!-- DEV 脚手架，可删 -->
 </body>
 </html>

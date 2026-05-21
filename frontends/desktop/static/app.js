@@ -155,6 +155,8 @@ const gaServiceStore = {
         return http(`/services/logs?id=${encodeURIComponent(id)}&tail=${encodeURIComponent(tail)}`);
       }
       case 'services/panel': return http('/services/panel');
+      case 'services/mykey/get': return http('/services/mykey');
+      case 'services/mykey/save': return http('/services/mykey', { method: 'POST', body: params || {} });
       case 'app/path/selectGaRoot': return http('/config');
       case 'list_continuable_sessions': return { sessions: [] };
       case 'restore_session': throw new Error('restore_session is not implemented in web2 bridge');
@@ -194,6 +196,8 @@ const gaServiceStore = {
     stopService,
     getServiceLogs: (id, tail = 200) => rpc('services/logs', { id, tail }),
     getServicePanel: () => rpc('services/panel', {}),
+    getMykeyContent: () => rpc('services/mykey/get', {}),
+    saveMykeyContent: (content) => rpc('services/mykey/save', { content }),
     pollSession: (sessionId, afterId = 0) => rpc('session/poll', { sessionId, afterId }),
     rpc,
     onBridgeMessage: (cb) => on('bridge-message', cb),
@@ -254,6 +258,8 @@ const I18N = {
     'err.channelNotConfigured': '请先在 mykey.py 中配置该平台',
     'sys.channelStarted': '已启动', 'sys.channelStopped': '已停止',
     'modal.channelLogs': '进程日志',
+    'modal.mykeyConfig': 'mykey.py 配置',
+    'sys.configSaved': '配置已保存',
     'st.starting': '启动中…', 'st.stopping': '停止中…',
     'st.online': '在线', 'st.offline': '离线', 'st.error': '错误', 'st.running': '运行', 'st.abnormal': '异常',
     'act.configure': '配置', 'act.logs': '日志', 'act.restart': '重启', 'act.stop': '停止', 'act.start': '启动',
@@ -310,6 +316,8 @@ const I18N = {
     'err.channelNotConfigured': 'Configure this platform in mykey.py first',
     'sys.channelStarted': 'Started', 'sys.channelStopped': 'Stopped',
     'modal.channelLogs': 'Process logs',
+    'modal.mykeyConfig': 'mykey.py',
+    'sys.configSaved': 'Configuration saved',
     'st.starting': 'Starting…', 'st.stopping': 'Stopping…',
     'st.online': 'Online', 'st.offline': 'Offline', 'st.error': 'Error', 'st.running': 'Running', 'st.abnormal': 'Error',
     'act.configure': 'Configure', 'act.logs': 'Logs', 'act.restart': 'Restart', 'act.stop': 'Stop', 'act.start': 'Start',
@@ -960,6 +968,10 @@ const chanEmptyEl = document.getElementById('chan-empty');
 const chanLogModal = document.getElementById('chan-log-modal');
 const chanLogPre = document.getElementById('chan-log-pre');
 const chanLogTitle = document.getElementById('chan-log-title');
+const chanConfigModal = document.getElementById('chan-config-modal');
+const chanConfigTitle = document.getElementById('chan-config-title');
+const chanConfigEditor = document.getElementById('chan-config-editor');
+const chanConfigSave = document.getElementById('chan-config-save');
 let _chanLogId = null;
 let _chanBusy = false;
 let _chanToastTimer = null;
@@ -1103,12 +1115,42 @@ async function openChannelLogs(id) {
     chanLogPre.textContent = t('err.channelLoad') + ': ' + (e.message || e);
   }
 }
-async function openChannelMykey() {
+async function openChannelMykey(channelId) {
+  if (!chanConfigModal || !chanConfigEditor) return;
+  const ch = gaServiceStore.get(channelId) || { id: channelId };
+  if (chanConfigTitle) {
+    chanConfigTitle.textContent = t('modal.mykeyConfig') + (channelId ? ' · ' + channelDisplayName(ch) : '');
+  }
+  chanConfigEditor.value = t('ch.loading');
+  chanConfigEditor.disabled = true;
+  if (chanConfigSave) chanConfigSave.disabled = true;
+  openModal('chan-config-modal');
   try {
-    await window.ga.openMykey();
+    const res = await window.ga.getMykeyContent();
+    chanConfigEditor.value = res.content || '';
+  } catch (e) {
+    chanConfigEditor.value = t('err.channelLoad') + ': ' + (e.message || e);
+  } finally {
+    chanConfigEditor.disabled = false;
+    if (chanConfigSave) chanConfigSave.disabled = false;
+    chanConfigEditor.focus();
+  }
+}
+async function saveChannelMykey() {
+  if (!chanConfigEditor || !chanConfigSave) return;
+  chanConfigSave.disabled = true;
+  try {
+    await window.ga.saveMykeyContent(chanConfigEditor.value);
+    showChanToast(t('sys.configSaved'), '', 'ok');
+    chanConfigModal.hidden = true;
   } catch (e) {
     showChanToast(t('err.channelLoad'), e.message || String(e), 'err');
+  } finally {
+    chanConfigSave.disabled = false;
   }
+}
+if (chanConfigSave) {
+  chanConfigSave.addEventListener('click', saveChannelMykey);
 }
 
 /* ═══════════════ 状态面板（复用 ServiceManager + 启停/日志） ═══════════════ */
@@ -1228,7 +1270,7 @@ if (chanListEl) {
       return;
     }
     if (act === 'configure') {
-      openChannelMykey();
+      openChannelMykey(id);
       return;
     }
     if (act === 'toggle') {

@@ -23,6 +23,8 @@ HTTP API:
   POST   /services/stop         body: {"id":"frontends/qqapp.py"}
   GET    /services/logs?id=frontends/qqapp.py&tail=200
   GET    /services/panel
+  GET    /services/mykey
+  POST   /services/mykey       body: {"content":"..."}
 
 WS API (state sync):
   GET /ws -> on connect sends services.snapshot; service.changed on updates
@@ -856,6 +858,32 @@ def _open_path_in_editor(target: Path) -> None:
     subprocess.Popen(["xdg-open", path])
 
 
+def _mykey_file() -> Path:
+    root = Path(manager.ga_root)
+    target = root / "mykey.py"
+    if not target.is_file():
+        template = root / "mykey_template.py"
+        if template.is_file():
+            target.write_text(template.read_text(encoding="utf-8"), encoding="utf-8")
+    return target
+
+
+async def mykey_get_handler(request):
+    target = _mykey_file()
+    content = target.read_text(encoding="utf-8") if target.is_file() else ""
+    return json_ok({"content": content, "path": str(target)})
+
+
+async def mykey_save_handler(request):
+    data = await read_json(request)
+    content = data.get("content")
+    if content is None:
+        return json_ok({"ok": False, "error": "missing_content"}, status=400)
+    target = _mykey_file()
+    target.write_text(str(content), encoding="utf-8")
+    return json_ok({"ok": True, "path": str(target)})
+
+
 async def service_start_handler(request):
     body = await read_json(request)
     sid = body.get("id") or request.query.get("id")
@@ -928,6 +956,8 @@ def create_app():
     app.router.add_post("/services/stop", service_stop_handler)
     app.router.add_get("/services/logs", service_logs_handler)
     app.router.add_get("/services/panel", service_panel_handler)
+    app.router.add_get("/services/mykey", mykey_get_handler)
+    app.router.add_post("/services/mykey", mykey_save_handler)
 
     # Serve static frontend (desktop/static/)
     static_dir = APP_DIR / "desktop" / "static"
