@@ -7,7 +7,6 @@ import sys
 from pathlib import Path
 from ultralytics import YOLO
 from PIL import Image, ImageDraw
-import numpy as np
 
 DEFAULT_MODEL = str(Path(__file__).resolve().parent.parent / 'temp' / 'weights' / 'icon_detect' / 'model.pt')
 

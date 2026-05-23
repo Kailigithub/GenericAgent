@@ -21,14 +21,12 @@ for _p in (_proj_root, _front_dir):
 from agentmain import GeneraticAgent
 from dataclasses import dataclass
 from dataclasses import dataclass, field
-from functools import lru_cache
 from io import StringIO
 from rich.cells import cell_len
 from rich.console import Console
 from rich.markdown import Markdown
 from rich.text import Text
 from rich.theme import Theme
-from typing import Callable
 
 
 # Module-level `clip` shim: keep sb.py-style `clip.copy(...)` calls

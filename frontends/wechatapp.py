@@ -1,4 +1,4 @@
-import os, sys, re, threading, queue, time, socket, json, struct, base64, uuid, hashlib, math
+import os, sys, re, threading, queue, time, socket, json, struct, base64, uuid, hashlib
 from pathlib import Path
 from urllib.parse import quote
 import requests, qrcode

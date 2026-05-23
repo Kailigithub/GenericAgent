@@ -10,12 +10,12 @@ ljqCtrl Quick Reference:
 - GrabWindow(hwnd) -> PIL Image: DPI-safe window screenshot
 """
 
-import os, sys, time, random, math, win32api, win32con, ctypes
+import time, win32api, win32con, ctypes
 import numpy as np
 
 dpi_scale = 1
 try:
-	from PIL import ImageGrab, Image, ImageEnhance, ImageFilter, ImageDraw
+	from PIL import ImageGrab, Image
 	import cv2
 except: pass
 

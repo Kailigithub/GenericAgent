@@ -1,6 +1,6 @@
 # reflect module: BBS接单
 # check()内预检BBS，无新帖返回None不唤醒agent
-import json, time, os
+import json, os
 from urllib import request
 
 INTERVAL = 60

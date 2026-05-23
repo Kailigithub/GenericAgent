@@ -2,8 +2,6 @@ import ctypes
 import ctypes.wintypes
 import argparse
 import yara
-import sys
-import os
 import json
 
 # Define WinAPI Types for 64-bit compatibility
