@@ -2750,6 +2750,11 @@ class GenericAgentTUI(App[None]):
                 result_text = msg.on_select(value)
             except Exception as e:
                 result_text = f"❌ 失败: {type(e).__name__}: {e}"
+        # If on_select rebuilt the message container (e.g. /rewind),
+        # the old anchor widgets are now detached — skip collapse.
+        anchor = msg._hint_widget or msg._body_widget
+        if anchor is not None and hasattr(anchor, 'is_mounted') and not anchor.is_mounted:
+            return
         display = (result_text or label).strip() or label
         msg.selected_label = display
         msg.content = display
@@ -2759,7 +2764,6 @@ class GenericAgentTUI(App[None]):
         body.append("✓ ", style=C_GREEN)
         body.append(display, style=C_FG)
         new_widget = SelectableStatic(body, classes="msg")
-        anchor = msg._hint_widget or msg._body_widget
         if anchor is not None:
             container.mount(new_widget, after=anchor)
         else:
