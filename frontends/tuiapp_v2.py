@@ -3974,6 +3974,11 @@ class GenericAgentTUI(App[None]):
 
     def _refresh_sidebar(self):
         if not self.is_mounted: return
+        now = time.monotonic()
+        if hasattr(self, '_last_sidebar_refresh'):
+            if now - self._last_sidebar_refresh < 1.0:
+                return
+        self._last_sidebar_refresh = now
         self.query_one("#sidebar", Static).update(render_sidebar(self.sessions, self.current_id))
 
     def _at_bottom(self, container) -> bool:
