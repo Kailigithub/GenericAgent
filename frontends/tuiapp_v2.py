@@ -4735,11 +4735,11 @@ class GenericAgentTUI(App[None]):
                 result_text = msg.on_select(value)
             except Exception as e:
                 result_text = f"❌ 失败: {type(e).__name__}: {e}"
-        # PR #466 (upstream 8ae3645): if on_select rebuilt the message
-        # container (e.g. /rewind picker → _do_rewind → _remount_current_session
-        # detaches every widget under #messages), the captured anchors are
-        # now stale.  Bail out early so we don't try to mount(after=...)
-        # against a detached widget — that'd raise NoWidget and crash.
+        # If on_select rebuilt the message container (e.g. /rewind picker →
+        # _do_rewind → _remount_current_session detaches every widget under
+        # #messages), the captured anchors are now stale. Bail out early so
+        # we don't try to mount(after=...) against a detached widget — that
+        # would raise NoWidget and crash.
         anchor_guard = msg._hint_widget or msg._body_widget
         if (anchor_guard is not None
                 and hasattr(anchor_guard, 'is_mounted')
