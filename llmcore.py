@@ -1,4 +1,4 @@
-import os, json, re, time, requests, sys, threading, urllib3, base64, importlib, uuid
+import os, json, re, time, requests, sys, threading, urllib3, base64, importlib, uuid, copy
 from datetime import datetime
 urllib3.disable_warnings(urllib3.exceptions.InsecureRequestWarning)
 _RESP_CACHE_KEY = str(uuid.uuid4())
@@ -595,9 +595,9 @@ def _ensure_thinking_blocks(messages, model):
 class ClaudeSession(BaseSession):
     def raw_ask(self, messages):
         messages = _fix_messages(messages)
-        if self.max_tokens is None: self.max_tokens = 8192
+        max_tokens = self.max_tokens or 8192
         headers = {"x-api-key": self.api_key, "Content-Type": "application/json", "anthropic-version": "2023-06-01", "anthropic-beta": "prompt-caching-2024-07-31"}
-        payload = {"model": self.model, "messages": messages, "max_tokens": self.max_tokens, "stream": self.stream}
+        payload = {"model": self.model, "messages": messages, "max_tokens": max_tokens, "stream": self.stream}
         if self.temperature != 1: payload["temperature"] = self.temperature
         self._apply_claude_thinking(payload)
         if self.system: payload["system"] = [{"type": "text", "text": self.system, "cache_control": {"type": "persistent"}}]
@@ -644,7 +644,7 @@ class NativeClaudeSession(BaseSession):
         self._device_id = uuid.uuid4().hex + uuid.uuid4().hex[:32]
         self.tools = None
     def raw_ask(self, messages):
-        if self.max_tokens is None: self.max_tokens = 8192
+        max_tokens = self.max_tokens or 8192
         model = self.model
         messages = _fix_messages(messages)
         if 'claude' in model.lower(): messages = _drop_unsigned_thinking(messages)
@@ -657,7 +657,7 @@ class NativeClaudeSession(BaseSession):
             "user-agent": self.user_agent, "x-app": "cli"}
         if self.api_key.startswith("sk-ant-"): headers["x-api-key"] = self.api_key
         else: headers["authorization"] = f"Bearer {self.api_key}"
-        payload = {"model": model, "messages": messages, "max_tokens": self.max_tokens, "stream": self.stream}
+        payload = {"model": model, "messages": messages, "max_tokens": max_tokens, "stream": self.stream}
         if self.temperature != 1: payload["temperature"] = self.temperature
         self._apply_claude_thinking(payload)
         payload["metadata"] = {"user_id": json.dumps({"device_id": self._device_id, "account_uuid": self._account_uuid, "session_id": self._session_id}, separators=(',', ':'))}
@@ -748,7 +748,7 @@ class ToolClient:
         self.log_path = None
 
     def chat(self, messages, tools=None):
-        tools = json.loads(json.dumps(tools, ensure_ascii=False)) if tools else tools
+        tools = copy.deepcopy(tools) if tools else tools
         for t in tools or []:
             f = t.get('function', {})
             if f.get('name') == 'file_write':
