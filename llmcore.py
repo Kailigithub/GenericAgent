@@ -1,4 +1,4 @@
-import os, json, re, time, requests, sys, threading, urllib3, base64, importlib, uuid, pathlib
+import os, json, re, time, requests, sys, threading, urllib3, base64, copy, importlib, uuid, pathlib
 from datetime import datetime
 urllib3.disable_warnings(urllib3.exceptions.InsecureRequestWarning)
 _RESP_CACHE_KEY = str(uuid.uuid4()); _RESP_CODEX_KEY = str(uuid.uuid4())
@@ -607,9 +607,9 @@ def _ensure_thinking_blocks(messages, model):
 class ClaudeSession(BaseSession):
     def raw_ask(self, messages):
         messages = _fix_messages(messages)
-        if self.max_tokens is None: self.max_tokens = 8192
+        max_tokens = self.max_tokens or 8192
         headers = {"x-api-key": self.api_key, "Content-Type": "application/json", "anthropic-version": "2023-06-01", "anthropic-beta": "prompt-caching-2024-07-31"}
-        payload = {"model": self.model, "messages": messages, "max_tokens": self.max_tokens, "stream": self.stream}
+        payload = {"model": self.model, "messages": messages, "max_tokens": max_tokens, "stream": self.stream}
         if self.temperature != 1: payload["temperature"] = self.temperature
         self._apply_claude_thinking(payload)
         if self.system: payload["system"] = [{"type": "text", "text": self.system, "cache_control": {"type": "persistent"}}]
@@ -674,7 +674,7 @@ class NativeClaudeSession(BaseSession):
         self.tools = None
         if self.user_agent == self.default_ua: self.user_agent = self.native_ua
     def raw_ask(self, messages):
-        if self.max_tokens is None: self.max_tokens = 8192
+        max_tokens = self.max_tokens or 8192
         model = self.model
         messages = _fix_messages(messages)
         if 'claude' in model.lower(): messages = _drop_unsigned_thinking(messages)
@@ -688,7 +688,7 @@ class NativeClaudeSession(BaseSession):
         headers.update({"Accept": "application/json", "X-Claude-Code-Session-Id": self._session_id, "X-Stainless-Arch": "x64", "X-Stainless-Lang": "js", "X-Stainless-OS": "Windows", "X-Stainless-Package-Version": "0.94.0", "X-Stainless-Retry-Count": "0", "X-Stainless-Runtime": "node", "X-Stainless-Runtime-Version": "v24.3.0", "X-Stainless-Timeout": "600"})
         if self.api_key.startswith("sk-ant-"): headers["x-api-key"] = self.api_key
         else: headers["authorization"] = f"Bearer {self.api_key}"
-        payload = {"model": model, "messages": messages, "max_tokens": self.max_tokens, "stream": self.stream}
+        payload = {"model": model, "messages": messages, "max_tokens": max_tokens, "stream": self.stream}
         #if self.fake_cc_system_prompt: payload["max_tokens"] = 64000
         if self.temperature != 1: payload["temperature"] = self.temperature
         self._apply_claude_thinking(payload)
@@ -785,7 +785,7 @@ class ToolClient:
         self.log_path = None
 
     def chat(self, messages, tools=None):
-        tools = json.loads(json.dumps(tools, ensure_ascii=False)) if tools else tools
+        tools = copy.deepcopy(tools) if tools else tools
         for t in tools or []:
             f = t.get('function', {})
             if f.get('name') == 'file_write':

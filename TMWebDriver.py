@@ -149,7 +149,7 @@ class TMWebDriver:
                 except Exception as e:  
                     print(f"Error handling message: {e}")  
                     if hasattr(self, 'data'): print(self.data)  
-            def connected(self): (f"New connection from {self.address}")  
+            def connected(self): print(f"New connection from {self.address}")  
             def handle_close(self): 
                 print(f"WS Connection closed: {self.address}")
                 driver._unregister_client(self)  
