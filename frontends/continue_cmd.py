@@ -210,7 +210,7 @@ def restore(agent, path):
     if not summary: return f'❌ {name} 无法解析（非 native 且无摘要可提取）', False
     agent.abort()
     agent.history.extend(summary)
-    n = sum(1 for l in summary if l.startswith('[USER]: '))
+    n = sum(1 for item in summary if item.startswith('[USER]: '))
     return f'⚠️ 非 native 格式，已降级恢复 {n} 轮摘要（{name}）\n(请输入新问题继续)', False
 
 def handle(agent, query, display_queue):

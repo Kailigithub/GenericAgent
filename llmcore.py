@@ -524,7 +524,7 @@ class BaseSession:
         self.context_win = cfg.get('context_win', default_context_win)
         self.history = []; self.lock = threading.Lock(); self.system = ""
         self.name = cfg.get('name', self.model)
-        proxy = cfg.get('proxy'); 
+        proxy = cfg.get('proxy')
         self.proxies = {"http": proxy, "https": proxy} if proxy else None
         self.max_retries = max(0, int(cfg.get('max_retries', 4)))
         self.verify = cfg.get('verify', True)

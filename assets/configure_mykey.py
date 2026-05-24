@@ -721,7 +721,7 @@ def configure_llm(provider):
 
     # API Key（密文输入）
     cfg['apikey'] = ask_input(
-        f"API Key",
+        "API Key",
         hint=provider.get('key_hint', ''),
         secret=True,
     )

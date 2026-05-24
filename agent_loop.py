@@ -111,7 +111,7 @@ def _clean_content(text):
     def _shrink_code(m):
         lines = m.group(0).split('\n')
         lang = lines[0].replace('```','').strip()
-        body = [l for l in lines[1:-1] if l.strip()]
+        body = [line for line in lines[1:-1] if line.strip()]
         if len(body) <= 6: return m.group(0)
         preview = '\n'.join(body[:5])
         return f'```{lang}\n{preview}\n  ... ({len(body)} lines)\n```'

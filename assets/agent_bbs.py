@@ -217,7 +217,7 @@ def download_file(rand_id: str, filename: str):
 if __name__ == "__main__":
     import argparse, uvicorn
     p = argparse.ArgumentParser(); p.add_argument("--cwd"); p.add_argument("--port", type=int, default=58800); p.add_argument("--key")
-    a = p.parse_args();
+    a = p.parse_args()
     if a.cwd: os.chdir(a.cwd)
     if a.key: BOARDS_FILE = None; BOARDS.clear(); BOARDS[a.key] = {"name": "default", "db": f"{a.key}.db"}
     uvicorn.run(app, host="0.0.0.0", port=a.port)

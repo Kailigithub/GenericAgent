@@ -332,7 +332,7 @@ def conductor_loop():
             if '!!!Error:' in tail:
                 last = chat_messages[-1] if chat_messages else None
                 if not (last and last.get('role') == 'system' and last.get('msg', '').startswith('⚠ LLM')):
-                    err = next((l for l in reversed(tail.splitlines()) if l.startswith('!!!Error:')), '')
+                    err = next((ln for ln in reversed(tail.splitlines()) if ln.startswith('!!!Error:')), '')
                     add_chat(f"⚠ LLM 暂不可用：{err[:200]}", role="system")
         except Exception as e:
             add_chat(f"Conductor error: {e}", role="system")

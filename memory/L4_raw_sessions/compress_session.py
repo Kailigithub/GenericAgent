@@ -88,8 +88,8 @@ _RE_HISTORY = re.compile(r'<history>(.*?)</history>', re.S)
 
 def _parse_history_block(raw):
     """Parse <history> block into ['[USER]...', '[Agent]...'] lines."""
-    lines = [l.strip() for l in raw.split('\n') if l.strip()]
-    parsed = [l for l in lines if l.startswith('[USER]') or l.startswith('[Agent]')]
+    lines = [ln.strip() for ln in raw.split('\n') if ln.strip()]
+    parsed = [ln for ln in lines if ln.startswith('[USER]') or ln.startswith('[Agent]')]
     if len(parsed) >= 2:
         return parsed
     # JSON format: literal \\n separators
@@ -149,7 +149,7 @@ def _existing_sessions(l4_dir):
     hist_path = os.path.join(l4_dir, 'all_histories.txt')
     if not os.path.exists(hist_path): return set()
     with open(hist_path, 'r', encoding='utf-8') as f:
-        return {l.strip().replace('SESSION: ', '') for l in f if l.startswith('SESSION: ')}
+        return {ln.strip().replace('SESSION: ', '') for ln in f if ln.startswith('SESSION: ')}
 
 def batch_process(src, l4_dir=None, dry_run=True):
     """Batch compress + extract history + archive. dry_run=True is safe default."""

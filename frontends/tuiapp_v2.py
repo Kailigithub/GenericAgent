@@ -514,8 +514,8 @@ def _strip_quote_deco(s: str) -> tuple:
 
 def _align_md_renders(narrow_raw: str, wide_raw: str):
     """Walk narrow + wide line-by-line; return (source, line_starts, line_indents, line_lengths)."""
-    narrow = [l.rstrip() for l in narrow_raw.split("\n")]
-    wide = [l.rstrip() for l in wide_raw.split("\n")]
+    narrow = [ln.rstrip() for ln in narrow_raw.split("\n")]
+    wide = [ln.rstrip() for ln in wide_raw.split("\n")]
 
     wrap_groups: list = []
     ni = 0
