@@ -1282,6 +1282,8 @@ class InputArea(TextArea):
         Binding("cmd+v",       "paste", "Paste", show=False),
         # Ctrl+U: readline-style kill-line, repurposed here to clear the whole input.
         Binding("ctrl+u",      "clear_input", "ClearInput", show=False),
+        # Ctrl+S: stash/restore input draft (Claude Code muscle-memory alias).
+        Binding("ctrl+s",      "stash", "Stash", show=False),
     ]
 
     def action_noop(self) -> None:
@@ -1299,6 +1301,36 @@ class InputArea(TextArea):
             self.app._resize_input(self)
         except Exception:
             pass
+
+    def action_stash(self) -> None:
+        """Stash/restore input draft: press once to save and clear, press again
+        (when input is empty) to restore the saved draft. Mirrors Claude Code's
+        Ctrl+S chat:stash behaviour."""
+        current = self.text
+        if current:
+            # Stash current text and clear the input.
+            self._draft_stash = current
+            self.reset()
+            self._history_index = -1
+            self._history_stash = ""
+            try:
+                self.app._hide_palette()
+            except Exception:
+                pass
+            try:
+                self.app._resize_input(self)
+            except Exception:
+                pass
+        elif self._draft_stash:
+            # Input is empty — restore the stashed draft.
+            self.text = self._draft_stash
+            self._draft_stash = ""
+            self._history_index = -1
+            self._suppress_palette_next_change()
+            try:
+                self.app._resize_input(self)
+            except Exception:
+                pass
 
     def _insert_via_keyboard(self, text: str) -> None:
         result = self._replace_via_keyboard(text, *self.selection)
@@ -1398,6 +1430,7 @@ class InputArea(TextArea):
         self._input_history: list[str] = []
         self._history_index: int = -1         # -1 means not browsing
         self._history_stash: str = ""
+        self._draft_stash: str = ""           # Ctrl+S stash for scratch input
         self._HISTORY_MAX = 200
 
     def expand_placeholders(self, text: str) -> str:
