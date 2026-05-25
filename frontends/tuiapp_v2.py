@@ -887,8 +887,8 @@ Screen { background: $ga-bg; color: $ga-fg; }
 #tipbar {
     height: 1;
     background: $ga-bg;
-    padding: 0 2;
-    color: $ga-dim;
+    padding: 0 1;
+    color: $ga-border;
 }
 
 /* Pickers — used by both ChoiceList (OptionList) and MultiChoiceList
@@ -926,7 +926,10 @@ SelectionList.picker > .selection-list--button-highlighted { background: transpa
     margin-bottom: 0;
 }
 .fold-header:hover { background: $ga-sel-bg; }
-.spinner { height: 1; }
+.spinner {
+    height: 1;
+    margin-top: 1;
+}
 
 #palette {
     height: auto;
