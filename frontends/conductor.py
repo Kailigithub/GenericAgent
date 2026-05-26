@@ -177,6 +177,9 @@ def start_subagent(prompt: str) -> dict:
     agent = GenericAgent()
     agent.inc_out = True
     agent.verbose = False
+    # Inherit model selection from conductor agent
+    if conductor_agent is not None:
+        agent.next_llm(conductor_agent.llm_no)
 
     start_agent_runner(agent, f"subagent-{sid}")
     state = SubAgentState(id=sid, agent=agent, prompt=prompt, status="running")
