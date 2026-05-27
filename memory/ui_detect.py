@@ -105,7 +105,7 @@ def visualize(image_path, elements, output_path=None):
     draw = ImageDraw.Draw(img)
     try:
         font = ImageFont.truetype("msyh.ttc", 14)
-    except:
+    except Exception:
         font = ImageFont.load_default()
     for el in elements:
         x1, y1, x2, y2 = el['bbox']
