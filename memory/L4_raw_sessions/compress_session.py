@@ -1,7 +1,7 @@
 """L4 Session Log Processor — compress & extract history.
 Format A (JSON): kept as-is.  Format B (Raw): strip sys prompt & assistant echo.
 """
-import re, os, json, ast
+import re, os
 from datetime import datetime
 
 L4_DIR = os.path.dirname(os.path.abspath(__file__))

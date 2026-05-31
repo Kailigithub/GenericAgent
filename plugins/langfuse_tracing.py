@@ -7,7 +7,7 @@ Replaces old monkey-patch approach with hooks on:
 
 Usage tracking (SSE parser wrapping) stays as internal llmcore patch.
 """
-import threading, sys
+import threading
 
 try:
     from llmcore import _load_mykeys

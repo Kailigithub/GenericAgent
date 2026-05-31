@@ -1,6 +1,6 @@
-import os, sys, re, time, json, uuid, queue, asyncio, threading, builtins
+import os, sys, re, time, uuid, queue, asyncio, threading, builtins
 from dataclasses import dataclass, field
-from typing import Dict, Any, Optional, List
+from typing import Dict, Optional, List
 
 # Silence print() from subagent threads (they share stdout with conductor)
 _original_print = builtins.print

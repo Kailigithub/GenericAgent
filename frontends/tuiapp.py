@@ -22,7 +22,6 @@ import queue
 import re
 import sys
 import threading
-import time
 from dataclasses import dataclass, field
 from itertools import count
 from typing import Any, Callable, Optional
