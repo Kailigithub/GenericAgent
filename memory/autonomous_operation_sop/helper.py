@@ -70,8 +70,6 @@ def complete_task(taskname: str, historyline: str, report_path: str) -> str:
     Returns:
         成功消息 + 改TODO指令，或错误消息
     """
-    errors = []
-
     # ── 校验 ──
     if "\n" in historyline.strip():
         return "[ERROR] historyline 必须是单行，不能包含换行符"

@@ -833,7 +833,7 @@ class _MsgRow(QWidget):
             try:
                 with open(file_path, "w", encoding="utf-8") as f:
                     f.write(self._text)
-            except Exception as e:
+            except Exception:
                 import traceback
                 traceback.print_exc()
 

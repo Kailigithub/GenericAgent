@@ -22,7 +22,6 @@ for _p in (_proj_root, _front_dir):
         sys.path.insert(0, _p)
 
 from agentmain import GeneraticAgent
-from dataclasses import dataclass
 from dataclasses import dataclass, field
 from functools import lru_cache
 from io import StringIO
@@ -789,7 +788,7 @@ def _ptk_keypress_to_bytes(kp) -> bytes:
     try:
         from prompt_toolkit.keys import Keys
     except Exception:
-        Keys = None  # type: ignore[assignment]
+        Keys = None  # type: ignore[assignment]  # noqa: F841
 
     key = getattr(kp, 'key', None)
     data = getattr(kp, 'data', '') or ''

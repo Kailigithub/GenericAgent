@@ -809,7 +809,7 @@ def _run_async(coro):
 
 
 def handle_message(data):
-    event, message, sender = data.event, data.event.message, data.event.sender
+    _event, message, sender = data.event, data.event.message, data.event.sender
     message_id = getattr(message, "message_id", "") or ""
     if not _claim_message_once(message_id):
         print(f"忽略重复飞书消息: {message_id}")

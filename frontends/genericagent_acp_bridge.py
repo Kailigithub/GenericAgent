@@ -146,7 +146,6 @@ class GenericAgentAcpBridge:
     def write_message(self, msg: Dict[str, Any]) -> None:
         payload = compact_json(msg)
         raw = (payload + "\n").encode("utf-8")
-        method = msg.get("method", msg.get("id", "?"))
         eprint(f"[ACP-BRIDGE] >>> {payload[:500]}")
         try:
             with self._write_lock:
