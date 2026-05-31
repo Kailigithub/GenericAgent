@@ -6125,13 +6125,12 @@ class GenericAgentTUI(App[None]):
                         m.done = True
                         found = m
                         break
-                if found and agent_id == self.current_id:
-                    if found._segment_widgets:
-                        try: self._stream_update_assistant(found)
-                        except Exception: self._refresh_messages()
-                    else:
-                        self._refresh_messages()
-                    if refresh_chrome:
+                    if found and agent_id == self.current_id:
+                        if found._segment_widgets:
+                            try: self._stream_update_assistant(found)
+                            except Exception: self._refresh_messages()
+                        else:
+                            self._refresh_messages()
                         self._refresh_sidebar()
                         self._refresh_topbar()
                     self._ensure_spinner()
