@@ -371,7 +371,9 @@ def on_message(bot, msg):
         try:
             done = []; turn = 1
             while True:
-                item = dq.get(timeout=300)
+                if _task_aborted.get(uid): break
+                try: item = dq.get(timeout=300)
+                except queue.Empty: continue
                 if 'done' in item: break
                 if item.get('turn', turn) > turn:
                     outputs = item.get('outputs', [])
