@@ -29,7 +29,7 @@ def reload_mykeys():
         print(f'[Info] Load mykeys from {_mykey_path}')
         globals().update(mykeys=mk)
         return mk, True
-    except: return globals().get('mykeys', {}), False
+    except Exception: return globals().get('mykeys', {}), False
 
 def __getattr__(name):  # once guard in PEP 562
     if name == 'mykeys': return reload_mykeys()[0]
@@ -162,7 +162,7 @@ def _parse_claude_sse(resp_lines):
             if current_block:
                 if current_block["type"] == "tool_use":
                     try: current_block["input"] = json.loads(tool_json_buf) if tool_json_buf else {}
-                    except: current_block["input"] = {"_raw": tool_json_buf}
+                    except Exception: current_block["input"] = {"_raw": tool_json_buf}
                 content_blocks.append(current_block)
                 current_block = None
         elif evt_type == "message_delta":
@@ -182,7 +182,7 @@ def _parse_claude_sse(resp_lines):
     if current_block:
         if current_block["type"] == "tool_use":
             try: current_block["input"] = json.loads(tool_json_buf) if tool_json_buf else {}
-            except: current_block["input"] = {"_raw": tool_json_buf}
+            except Exception: current_block["input"] = {"_raw": tool_json_buf}
         content_blocks.append(current_block); current_block = None
     if warn:
         print(f"[WARN] {warn.strip()}")
@@ -194,13 +194,13 @@ def _try_parse_tool_args(raw):
     Returns list of parsed dicts."""
     if not raw: return [{}]
     try: return [json.loads(raw)]
-    except: pass
+    except Exception: pass
     parts = re.split(r'(?<=\})(?=\{)', raw)
     if len(parts) > 1:
         parsed = []
         for p in parts:
             try: parsed.append(json.loads(p))
-            except: return [{"_raw": raw}]
+            except Exception: return [{"_raw": raw}]
         return parsed
     return [{"_raw": raw}]
 
@@ -219,7 +219,7 @@ def _parse_openai_sse(resp_lines, api_mode="chat_completions"):
             data_str = line[5:].lstrip()
             if data_str == "[DONE]": break
             try: evt = json.loads(data_str)
-            except: continue
+            except Exception: continue
             etype = evt.get("type", "")
             if etype == "response.output_text.delta":
                 delta = evt.get("delta", "")
@@ -268,7 +268,7 @@ def _parse_openai_sse(resp_lines, api_mode="chat_completions"):
             data_str = line[5:].lstrip()
             if data_str == "[DONE]": break
             try: evt = json.loads(data_str)
-            except: continue
+            except Exception: continue
             ch = (evt.get("choices") or [{}])[0]
             delta = ch.get("delta") or {}
             if delta.get("reasoning_content"):
@@ -325,7 +325,7 @@ def _parse_openai_json(data, api_mode="chat_completions"):
                         blocks.append({"type": "text", "text": p["text"]}); yield p["text"]
             elif item.get("type") == "function_call":
                 try: args = json.loads(item.get("arguments", "")) if item.get("arguments") else {}
-                except: args = {"_raw": item.get("arguments", "")}
+                except Exception: args = {"_raw": item.get("arguments", "")}
                 blocks.append({"type": "tool_use", "id": item.get("call_id", item.get("id", "")),
                                "name": item.get("name", ""), "input": args})
     else:
@@ -340,7 +340,7 @@ def _parse_openai_json(data, api_mode="chat_completions"):
         for tc in (msg.get("tool_calls") or []):
             fn = tc.get("function", {})
             try: args = json.loads(fn.get("arguments", "")) if fn.get("arguments") else {}
-            except: args = {"_raw": fn.get("arguments", "")}
+            except Exception: args = {"_raw": fn.get("arguments", "")}
             blocks.append({"type": "tool_use", "id": tc.get("id", ""), "name": fn.get("name", ""), "input": args})
     return blocks
 
@@ -361,7 +361,7 @@ def _stream_with_retry(sess, url, headers, payload, parse_fn):
     _RETRYABLE = {408, 409, 425, 429, 500, 502, 503, 504, 520, 521, 522, 523, 524, 525, 526, 527, 529}
     def _delay(resp, attempt):
         try: ra = float((resp.headers or {}).get("retry-after"))
-        except: ra = None
+        except Exception: ra = None
         return max(0.5, ra if ra is not None else min(30.0, 1.5 * (2 ** attempt)))
     for attempt in range(sess.max_retries + 1):
         streamed = False
@@ -374,7 +374,7 @@ def _stream_with_retry(sess, url, headers, payload, parse_fn):
                         print(f"[LLM Retry] HTTP {r.status_code}, retry in {d:.1f}s ({attempt+1}/{sess.max_retries+1})")
                         time.sleep(d); continue
                     try: body = r.text.strip()[:500]
-                    except: body = ""
+                    except Exception: body = ""
                     err = f"!!!Error: HTTP {r.status_code}" + (f": {body}" if body else "")
                     yield err; return [{"type": "text", "text": err}]
                 gen = parse_fn(r)
@@ -868,7 +868,7 @@ Follow these steps to think and act:
                 except json.JSONDecodeError:
                     errors.append(f'Failed to parse tool_use JSON: {json_str[:200]}')
                     self.last_tools = ''
-                except: pass
+                except Exception: pass
             if not tool_calls:
                 for e in errors:
                     print(f"[Warn] {e}"); tool_calls.append(MockToolCall('bad_json', {'msg': e}))
@@ -884,7 +884,7 @@ def _parse_text_tool_calls(content):
             idx = content.index(_jp); raw = json.loads(content[idx:])
             tcs = [MockToolCall(b["name"], b.get("input", {}), id=b.get("id", "")) for b in raw if b.get("type") == "tool_use"]
             return tcs, content[:idx].strip()
-        except: pass
+        except Exception: pass
     # try XML tags: <tool_call>{"name":..., "arguments":...}</tool_call>
     _xp = r"<(?:tool_use|tool_call)>((?:(?!<(?:tool_use|tool_call)>).){15,}?)</(?:tool_use|tool_call)>"
     for s in re.findall(_xp, content, re.DOTALL):
@@ -892,7 +892,7 @@ def _parse_text_tool_calls(content):
             d = tryparse(s.strip()); name = d.get('name')
             args = d.get('arguments') or d.get('args') or d.get('input') or {}
             if name: tcs.append(MockToolCall(name, args))
-        except: pass
+        except Exception: pass
     if tcs: content = re.sub(_xp, "", content, flags=re.DOTALL).strip()
     return tcs, content
 
@@ -916,12 +916,12 @@ def _write_llm_log(label, content, log_path=None):
 
 def tryparse(json_str):
     try: return json.loads(json_str)
-    except: pass
+    except Exception: pass
     json_str = json_str.strip().strip('`').replace('json\n', '', 1).strip()
     try: return json.loads(json_str)
-    except: pass
+    except Exception: pass
     try: return json.loads(json_str[:-1])
-    except: pass
+    except Exception: pass
     if '}' in json_str: json_str = json_str[:json_str.rfind('}') + 1]
     return json.loads(json_str)
 
