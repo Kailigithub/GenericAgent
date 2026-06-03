@@ -635,7 +635,7 @@ temp_monitor_js = """function startStrMonitor(interval) {
 """  
 def start_temp_monitor(driver):  
     try: driver.execute_js(temp_monitor_js)
-    except: pass
+    except Exception: pass
 
 def get_temp_texts(driver):  
     js = """function stopStrMonitor() {  
@@ -821,7 +821,7 @@ def execute_js_rich(script, driver, no_monitor=False):
     last_html = None
     if not no_monitor:
         try: last_html = get_html(driver, cutlist=False, extra_js=temp_monitor_js, maxchars=9999999)
-        except: pass
+        except Exception: pass
     result = None;  error_msg = None;  reloaded = False; newTabs = []
     before_sids = set(driver.get_session_dict().keys()); response = {}
     try:
@@ -853,7 +853,7 @@ def execute_js_rich(script, driver, no_monitor=False):
     if no_monitor: return rr
     if not reloaded:
         try: rr['transients'] = get_temp_texts(driver)
-        except: rr['transients'] = []
+        except Exception: rr['transients'] = []
     if not reloaded and len(newTabs) == 0:
         try:
             current_html = get_html(driver, cutlist=False, maxchars=9999999)
@@ -867,7 +867,7 @@ def execute_js_rich(script, driver, no_monitor=False):
             if change_count == 0 and not transients and len(newTabs) == 0:
                 diff_summary += " (页面无变化)"
                 rr['suggestion'] = "页面无明显变化"
-        except:
+        except Exception:
             diff_summary = "页面变化监控不可用"
         rr['diff'] = diff_summary
     return rr
