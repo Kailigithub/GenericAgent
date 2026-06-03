@@ -20,7 +20,7 @@ from PySide6.QtWidgets import (
 )
 from PySide6.QtCore import (
     Qt, QTimer, QPoint, QPointF, QByteArray, QSize,
-    Signal, QMetaObject, Q_ARG, QObject, QDateTime, QEvent,
+    QDateTime, QEvent,
 )
 from PySide6.QtGui import (
     QPainter, QColor, QLinearGradient, QRadialGradient,
@@ -29,7 +29,7 @@ from PySide6.QtGui import (
 
 sys.path.insert(0, os.path.abspath(os.path.join(os.path.dirname(__file__), '..')))
 from agentmain import GeneraticAgent
-from chatapp_common import FILE_HINT, HELP_TEXT, clean_reply, build_done_text, format_restore
+from chatapp_common import FILE_HINT, HELP_TEXT, format_restore
 
 
 # ══════════════════════════════════════════════════════════════════════
@@ -823,7 +823,6 @@ class _MsgRow(QWidget):
 
     def _export_as_md(self):
         from PySide6.QtWidgets import QFileDialog
-        import os
         from datetime import datetime
         default_name = f"msg_{datetime.now().strftime('%Y%m%d_%H%M%S')}.md"
         file_path, _ = QFileDialog.getSaveFileName(

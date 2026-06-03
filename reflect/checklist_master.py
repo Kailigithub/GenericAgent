@@ -1,4 +1,4 @@
-import json, time, random
+import json, random
 from pathlib import Path
 from urllib import request
 

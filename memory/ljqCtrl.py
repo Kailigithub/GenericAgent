@@ -10,14 +10,14 @@ ljqCtrl Quick Reference:
 - GrabWindow(hwnd) -> PIL Image: DPI-safe window screenshot (needs foreground)
 - GrabWindowBg(hwnd_or_name) -> PIL Image: WGC background capture (Win10+, pip install windows-capture)
 """
-import os, sys, time, random, math, win32api, win32con, win32gui, ctypes
+import os, time, win32api, win32con, win32gui, ctypes
 import numpy as np
 
 print('[TIPS] always use physical coordinates!')
 
 dpi_scale = 1
 try:
-	from PIL import ImageGrab, Image, ImageEnhance, ImageFilter, ImageDraw
+	from PIL import ImageGrab, Image
 	import cv2
 except: pass
 

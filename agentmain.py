@@ -275,7 +275,7 @@ if __name__ == '__main__':
                 except Exception as e: print(f'[Reflect] on_done error: {e}')
             if getattr(mod, 'ONCE', False): print('[Reflect] ONCE=True, exiting.'); break
     else:
-        try: import readline
+        try: import readline  # noqa: F401 — side-effect: enables REPL history
         except Exception: pass
         agent.inc_out = True
         if sys.stdout.isatty():

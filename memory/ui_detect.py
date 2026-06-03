@@ -96,7 +96,7 @@ def detect(image_path, mode='match', model_path=None, conf=0.25, iou_thresh=0.5)
     """
     # 归一化：PIL Image → 临时文件
     if isinstance(image_path, Image.Image):
-        import tempfile, os
+        import tempfile
         tmp = tempfile.NamedTemporaryFile(suffix='.png', delete=False)
         image_path.save(tmp.name)
         image_path = tmp.name

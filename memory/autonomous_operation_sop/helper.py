@@ -10,7 +10,6 @@ autonomous_task.py - 自主行动任务管理API
   set_todo()        → 返回TODO真实路径
 """
 
-import os
 import re
 import shutil
 from pathlib import Path

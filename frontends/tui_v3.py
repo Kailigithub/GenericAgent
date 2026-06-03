@@ -6,7 +6,7 @@ Run: `python -m frontends.tui_v3` or `python frontends/tui_v3.py`.
 """
 from __future__ import annotations
 
-import asyncio, atexit, json, locale, logging, os, queue, random, re, select, shutil, signal, subprocess
+import asyncio, atexit, json, locale, logging, os, queue, random, re, shutil, subprocess
 import sys, tempfile, threading, time
 
 _IS_WINDOWS = os.name == 'nt'
@@ -24,14 +24,12 @@ for _p in (_proj_root, _front_dir):
 from agentmain import GeneraticAgent
 from dataclasses import dataclass
 from dataclasses import dataclass, field
-from functools import lru_cache
 from io import StringIO
 from rich.cells import cell_len
 from rich.console import Console
 from rich.markdown import Markdown
 from rich.text import Text
 from rich.theme import Theme
-from typing import Callable
 
 # ════════════════════════════════════════════════════════════════════════════
 # i18n — minimal dict-based zh/en translation layer (inlined; was tui_v3_i18n.py)
