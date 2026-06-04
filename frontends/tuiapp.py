@@ -721,7 +721,7 @@ def build_arg_parser() -> argparse.ArgumentParser:
 
 
 def main(argv: Optional[list[str]] = None) -> int:
-    args = build_arg_parser().parse_args(argv)
+    build_arg_parser().parse_args(argv)
     app = GenericAgentTUI()
     app.run()
     return 0

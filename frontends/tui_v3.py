@@ -22,7 +22,6 @@ for _p in (_proj_root, _front_dir):
         sys.path.insert(0, _p)
 
 from agentmain import GeneraticAgent
-from dataclasses import dataclass
 from dataclasses import dataclass, field
 from functools import lru_cache
 from io import StringIO
@@ -786,11 +785,6 @@ def _ptk_keypress_to_bytes(kp) -> bytes:
     ConPTY, mintty/msys pty) into symbolic Keys.  Keep the editor core small by
     translating those symbols back to the bytes already handled by _feed/_keys.
     """
-    try:
-        from prompt_toolkit.keys import Keys
-    except Exception:
-        Keys = None  # type: ignore[assignment]
-
     key = getattr(kp, 'key', None)
     data = getattr(kp, 'data', '') or ''
     mods = {str(m).lower().replace('_', '-') for m in (getattr(kp, 'modifiers', None) or ())}
