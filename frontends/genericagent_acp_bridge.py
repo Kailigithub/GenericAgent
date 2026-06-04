@@ -147,7 +147,7 @@ class GenericAgentAcpBridge:
         payload = compact_json(msg)
         raw = (payload + "\n").encode("utf-8")
         method = msg.get("method", msg.get("id", "?"))
-        eprint(f"[ACP-BRIDGE] >>> {payload[:500]}")
+        eprint(f"[ACP-BRIDGE] >>> [{method}] {payload[:500]}")
         try:
             with self._write_lock:
                 self._json_out.write(raw)
