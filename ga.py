@@ -397,8 +397,10 @@ class GenericAgentHandler(BaseHandler):
         try:
             new_content = expand_file_refs(content, base_dir=self.cwd)
             if mode == "prepend":
-                old = open(path, 'r', encoding="utf-8").read() if os.path.exists(path) else ""
-                open(path, 'w', encoding="utf-8").write(new_content + old)
+                old = ''
+                if os.path.exists(path):
+                    with open(path, 'r', encoding="utf-8") as f: old = f.read()
+                with open(path, 'w', encoding="utf-8") as f: f.write(new_content + old)
             else:
                 with open(path, 'a' if mode == "append" else 'w', encoding="utf-8") as f: f.write(new_content)
             yield f"[Status] ✅ {mode.capitalize()} 成功 ({len(new_content)} bytes)\n"

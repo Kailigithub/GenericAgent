@@ -24,16 +24,20 @@ lang_suffix = '_en' if os.environ.get('GA_LANG', '') == 'en' else ''
 mem_dir = os.path.join(script_dir, 'memory')
 if not os.path.exists(mem_dir): os.makedirs(mem_dir)
 mem_txt = os.path.join(mem_dir, 'global_mem.txt')
-if not os.path.exists(mem_txt): open(mem_txt, 'w', encoding='utf-8').write('# [Global Memory - L2]\n')
+if not os.path.exists(mem_txt):
+    with open(mem_txt, 'w', encoding='utf-8') as f: f.write('# [Global Memory - L2]\n')
 mem_insight = os.path.join(mem_dir, 'global_mem_insight.txt')
 if not os.path.exists(mem_insight):
     t = os.path.join(script_dir, f'assets/global_mem_insight_template{lang_suffix}.txt')
-    open(mem_insight, 'w', encoding='utf-8').write(open(t, encoding='utf-8').read() if os.path.exists(t) else '')
+    tpl = ''
+    if os.path.exists(t):
+        with open(t, encoding='utf-8') as src: tpl = src.read()
+    with open(mem_insight, 'w', encoding='utf-8') as f: f.write(tpl)
 cdp_cfg = os.path.join(script_dir, 'assets/tmwd_cdp_bridge/config.js')
 if not os.path.exists(cdp_cfg):
     try:
         os.makedirs(os.path.dirname(cdp_cfg), exist_ok=True)
-        open(cdp_cfg, 'w', encoding='utf-8').write(f"const TID = '__ljq_{hex(random.randint(0, 99999999))[2:8]}';")
+        with open(cdp_cfg, 'w', encoding='utf-8') as f: f.write(f"const TID = '__ljq_{hex(random.randint(0, 99999999))[2:8]}';")
     except Exception as e: print(f'[WARN] CDP config init failed: {e} — advanced web features (tmwebdriver) will be unavailable.')
 
 def get_system_prompt():
@@ -273,7 +277,7 @@ if __name__ == '__main__':
                 print(f'[Reflect] drain error: {e}'); result = f'[ERROR] {e}'
             log_dir = os.path.join(script_dir, 'temp/reflect_logs'); os.makedirs(log_dir, exist_ok=True)
             script_name = os.path.splitext(os.path.basename(args.reflect))[0]
-            open(os.path.join(log_dir, f'{script_name}_{datetime.now():%Y-%m-%d}.log'), 'a', encoding='utf-8').write(f'[{datetime.now():%m-%d %H:%M}]\n{result}\n\n')
+            with open(os.path.join(log_dir, f'{script_name}_{datetime.now():%Y-%m-%d}.log'), 'a', encoding='utf-8') as f: f.write(f'[{datetime.now():%m-%d %H:%M}]\n{result}\n\n')
             if (on_done := getattr(mod, 'on_done', None)):
                 try: on_done(result)
                 except Exception as e: print(f'[Reflect] on_done error: {e}')
