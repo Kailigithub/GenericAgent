@@ -782,8 +782,27 @@ class _Clip:
 clip = _Clip()
 
 
+# Win32 console mode flags we re-assert on every maintenance tick.  Some
+# terminal hosts (notably Windows Terminal after losing focus, conhost after
+# a `mode` change, and the legacy cmd window after a console-attached program
+# exits) reset Console Mode flags.  ENABLE_VIRTUAL_TERMINAL_INPUT (0x0200)
+# is the one that prompt_toolkit needs to receive arrow keys, function keys,
+# and ESC-prefixed sequences — without it, the input pane silently stops
+# receiving non-printable keys after the user alt-tabs and returns.
+_ENABLE_VT_INPUT = 0x0200
+_ENABLE_VT_OUTPUT = 0x0004
+
+
 def _enable_windows_vt_mode() -> None:
-    """Enable UTF-8 + ANSI escape processing on Windows consoles when possible."""
+    """Enable UTF-8 + ANSI escape processing on Windows consoles when possible.
+
+    Also re-asserts ``ENABLE_VIRTUAL_TERMINAL_INPUT`` on the standard input
+    handle.  Some Windows console hosts clear that flag when the window loses
+    focus or when another console process attaches/detaches; once cleared,
+    prompt_toolkit stops receiving arrow/function/ESC-prefixed keys and the
+    input pane looks frozen.  Calling this from the maintenance loop
+    (see ``_maintenance_loop``) restores the flag within ~1s of focus return.
+    """
     if not _IS_WINDOWS:
         return
     try:
@@ -794,12 +813,23 @@ def _enable_windows_vt_mode() -> None:
         # std handles are pipes/ptys rather than Win32 console handles.
         kernel32.SetConsoleOutputCP(65001)
         kernel32.SetConsoleCP(65001)
-        enable_vt = 0x0004
-        for handle_id in (-11, -12):  # STD_OUTPUT_HANDLE, STD_ERROR_HANDLE
+        for handle_id in (-10, -11, -12):  # STD_INPUT_HANDLE, _OUTPUT, _ERROR
             handle = kernel32.GetStdHandle(handle_id)
             mode = ctypes.c_uint32()
-            if kernel32.GetConsoleMode(handle, ctypes.byref(mode)):
-                kernel32.SetConsoleMode(handle, mode.value | enable_vt)
+            if not kernel32.GetConsoleMode(handle, ctypes.byref(mode)):
+                continue
+            if handle_id == -10:
+                # Input side: VT input lets prompt_toolkit decode ESC sequences
+                # (arrow keys, Home/End, function keys).  Without this flag
+                # Windows delivers arrow keys as separate key-down events with
+                # VK codes only — PTK can't recognize them, so the input
+                # becomes effectively dead.
+                needed = _ENABLE_VT_INPUT | _ENABLE_VT_OUTPUT
+            else:
+                needed = _ENABLE_VT_OUTPUT
+            new_mode = mode.value | needed
+            if new_mode != mode.value:
+                kernel32.SetConsoleMode(handle, new_mode)
     except Exception:
         # Safe fallback: modern terminals usually already support ANSI/UTF-8;
         # older conhost may render escape codes, but the TUI should not crash.
@@ -5932,9 +5962,19 @@ class SB:
             self._build_live_lines()
 
         async def _maintenance_loop() -> None:
+            # On Windows some console hosts clear ``ENABLE_VIRTUAL_TERMINAL_INPUT``
+            # when the window loses focus, which freezes the input pane (issue
+            # #633).  Re-assert VT mode + UTF-8 charset once per second on top
+            # of the 30ms tick so focus returns restore input within ~1s.
+            _next_vt_refresh = 0.0
             while True:
                 await asyncio.sleep(0.03)
+                now = time.time()
                 dirty = False
+                if _IS_WINDOWS and now >= _next_vt_refresh:
+                    _next_vt_refresh = now + 1.0
+                    _enable_windows_vt_mode()
+                    _enter_utf8_charset()
                 if self._running and self._asking is None:
                     # spinner / elapsed text is time-based
                     dirty = True
