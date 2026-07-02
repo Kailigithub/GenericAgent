@@ -6164,6 +6164,12 @@ class GenericAgentTUI(App[None]):
             except queue.Empty: break
         if not latest: return
         question = latest["question"]; candidates = latest["candidates"]
+        # v2 parity with tui_v3 (dfab299): when the agent didn't supply
+        # candidates, mounting an empty ChoiceList still calls .focus() on
+        # mount and steals keyboard focus from the text input. Skip the
+        # card; the 'Waiting for your answer ...' marker is already in
+        # scrollback, and the user replies via the normal input box.
+        if not candidates: return
         multi = bool(self._MULTI_RE.search(question))
         kind = "multi_choice" if multi else "choice"
         choices = [(c, c) for c in candidates] + [(FREE_TEXT_LABEL, FREE_TEXT_CHOICE)]
