@@ -131,19 +131,22 @@ def cmd_status():
 
 
 def cmd_update():
-    """git pull + pip install"""
+    """git pull + pip install; abort if git pull fails so we never pip-install
+    on top of stale or conflicted source."""
     os.chdir(PROJECT_DIR)
     print("🔄 git pull...")
     r = subprocess.run(["git", "pull"], capture_output=True, text=True)
     print(r.stdout)
     if r.returncode != 0:
-        print(r.stderr)
+        print(r.stderr, file=sys.stderr)
+        sys.exit(r.returncode)
     print("📦 pip install...")
     r2 = subprocess.run([sys.executable, "-m", "pip", "install", "-e", "."],
                         capture_output=True, text=True)
     print(r2.stdout[-500:] if r2.stdout else "")
     if r2.returncode != 0:
-        print(r2.stderr[-500:])
+        print(r2.stderr[-500:], file=sys.stderr)
+        sys.exit(r2.returncode)
 
 
 def main():
