@@ -385,7 +385,7 @@ def _stream_with_retry(sess, url, headers, payload, parse_fn):
                 try:
                     while True: chunk = next(gen); streamed = True; yield chunk
                 except StopIteration as e:
-                    if not e.value and not streamed: raise requests.ConnectionError("empty response")
+                    if not e.value and not streamed: raise requests.ConnectionError("empty response") from e
                     return e.value or []
         except (requests.Timeout, requests.ConnectionError, requests.exceptions.ChunkedEncodingError) as e:
             #pathlib.Path(__file__).parent.joinpath('temp','bad_requests.json').write_text(json.dumps({"url":url,"headers":headers,"payload":payload,"err":str(e),"t":time.time()},ensure_ascii=False),encoding='utf-8')
