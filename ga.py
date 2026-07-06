@@ -24,7 +24,8 @@ def code_run(code, code_type="python", timeout=60, cwd=None, code_cwd=None, stop
     if code_type in ["python", "py"]:
         tmp_file = tempfile.NamedTemporaryFile(suffix=".ai.py", delete=False, mode='w', encoding='utf-8', dir=code_cwd)
         cr_header = os.path.join(script_dir, 'assets', 'code_run_header.py')
-        if os.path.exists(cr_header): tmp_file.write(open(cr_header, encoding='utf-8').read())
+        if os.path.exists(cr_header):
+            with open(cr_header, encoding='utf-8') as _h: tmp_file.write(_h.read())
         tmp_file.write(code)
         tmp_path = tmp_file.name
         tmp_file.close()
