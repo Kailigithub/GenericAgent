@@ -207,6 +207,12 @@ if __name__ == '__main__':
     parser.add_argument('--nolog', action='store_true')
     parser.add_argument('--no-user-tools', action='store_true')
     args, _unknown = parser.parse_known_args()
+    if _unknown and not args.reflect:
+        # Reject unknown CLI flags unless we are in --reflect mode, where
+        # extra key/value pairs are forwarded to the reflect script as parameters.
+        # Without this guard, typos like `--goal` silently fall through to
+        # interactive mode and the process looks alive without doing any work.
+        parser.error(f"unrecognized arguments: {' '.join(_unknown)}")
     _extra_args = dict(zip([k.lstrip('-') for k in _unknown[::2]], _unknown[1::2])) if _unknown else {}
 
     if (args.func or args.task) and not args.nobg:
